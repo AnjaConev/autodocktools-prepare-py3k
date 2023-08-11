@@ -23,12 +23,22 @@ This Object parses the result of an AutoDock job and returns a dictionary.
 
 """
 import os
-from string import find, join, replace, split, rfind, strip
 import re
 import numpy
 
 from AutoDockTools.ResultParser import ResultParser
 
+def find(x, y):
+    return x.find(y)
+
+def split(x, sep=None):
+    return x.split(sep)
+
+def join(x, con=""):
+    return con.join(x)
+
+def strip(x):
+    return x.strip()
 
 class DlgParser(ResultParser):
     """ reads log from a AutoDock docking and return structured data"""

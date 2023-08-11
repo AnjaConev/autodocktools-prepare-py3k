@@ -29,6 +29,7 @@ class TorTree:
     Additional attributes are added else where.
     """
     def __init__(self, parser=None, rootAtom=None):
+
         if rootAtom is not None:
             self.rootNode, allNodes = self.__buildTree(rootAtom)
             self.torsionMap = self.__orderTorsionMap(allNodes)
@@ -151,7 +152,9 @@ class TorTree:
                 # now there's a problem
                 raise RuntimeError("indistinguishable torsion TreeNodes")
                 return 0
-        allNodes.sort(__sortTorsionMap)
+        import functools 
+        cmp = functools.cmp_to_key(__sortTorsionMap)
+        allNodes.sort(key=cmp)
         #don't put rootNode into TorsionMap!!!
         return allNodes[:-1]
 
@@ -167,7 +170,7 @@ class TorTree:
         # process lines/build tree
         for lineStr in lineList:
             if debug: print(lineStr)
-            wordList = string.split(lineStr)
+            wordList = lineStr.split()
             if not wordList: continue # skip the loop
             #
             # Here lies the main switch for the PDBQ tags

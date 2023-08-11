@@ -23,7 +23,6 @@ This Object is the result of an AutoDock job.
 
 """
 import os, glob, time, sys
-from string import replace, rfind, find, strip
 
 from MolKit.pdbParser import PdbqParser, PdbqtParser
 from MolKit.protein import Residue, ResidueSet
@@ -39,11 +38,12 @@ from AutoDockTools.DlgParser import DlgParser
 from AutoDockTools.Conformation import Conformation, ConformationHandler
 from AutoDockTools.Conformation import PopulationHandler
 from AutoDockTools.cluster import Clusterer
-from AutoDockTools.interactiveHistogramGraph import InteractiveHistogramGraph
+#from AutoDockTools.interactiveHistogramGraph import InteractiveHistogramGraph
 from mglutil.math.rmsd import RMSDCalculator
 from AutoDockTools.InteractionDetector import InteractionDetector
 
-
+def strip(x):
+    return x.strip()
 
 class Docking:
     """ entity built from an AutoDock docking
@@ -216,14 +216,14 @@ class Docking:
                     if ok:
                         #rec_str xJ1_xtal:B:GLY16:N,HN
                         # try to retrieve receptor atoms
-                        rec_ats = self.css.select(receptorSet, strip(rec_str))
+                        rec_ats = self.css.select(receptorSet, rec_str.strip())
                         #rec_ats = self.vf.expandNodes(strip(rec_str))
                         if not len(rec_ats):
                             print("skipping hb_str because ",  rec_str, " did not match atoms in the receptor")
                         #(<AtomSet instance> holding 2 Atom, "xJ1_xtal:B:ARG57:NE,HE", '')
                         rec_ats = rec_ats[0]
                         #add ligand name to lig_str
-                        lig_ats = self.css.select(ligandSet, strip(lig_str))[0]
+                        lig_ats = self.css.select(ligandSet, lig_str.strip())[0]
                         #(<AtomSet instance> holding 1 Atom, "ZINC02025973_vs_le:d:<0>:O3", '')
                         #lig_ats = self.vf.expandNodes(strip(lig_str))
                         if not len(lig_ats):
@@ -435,6 +435,7 @@ class Docking:
                             #[range(0,200)], 
                         ctr += 1
                         cl_ctr += 1
+                    '''
                     ligand.clustNB = InteractiveHistogramGraph(ligand.name,
                         master=top, nodeList = dataList, reverseIndex=reverseList,
                         label_text=ligand.name + ':' + rms + ' rms', xlabel_text=xlabel, 
@@ -463,6 +464,7 @@ class Docking:
                             if j.point[0]==other_energy:
                                 other_index = i
                         ligand.clustNB.draw.itemconfig((other_index,), fill='red')
+                    '''
         self.ligMol = ligand
         return ligandSet
 
@@ -682,13 +684,13 @@ class Docking:
         ctr = 0
         for l in allLines:
             if l[-1]!='\n': l = l + '\n'
-            if find(l, 'ROOT')==0 and hasattr(dlo.parser, 'clusterRecord') and dlo.parser.clusterRecord is not None:
+            if l.find('ROOT')==0 and hasattr(dlo.parser, 'clusterRecord') and dlo.parser.clusterRecord is not None:
                 #put the RMS_REF REMARK here
                 rms_ref = dlo.parser.clusterRecord[0][0][5]
                 nl = "REMARK RMS_REF % 6.4f\n" % (rms_ref)
                 newLines.append(nl)
                 newLines.append(l)
-            elif find(l, 'ATOM')==0 or find(l, 'HETA')==0:
+            elif l.find('ATOM')==0 or l.find('HETA')==0:
                 cc = coords[ctr]
                 restLine = l[54:]
                 newLines.append(l[:30]+'%8.3f%8.3f%8.3f'%(cc[0],cc[1],cc[2])+l[54:])
@@ -771,7 +773,7 @@ class DockingLogObject:
     def _hackLigLineFormat(self, lines):
         for i in range(len(lines)):
             l = lines[i]
-            if find(l, 'ATOM')>-1:
+            if l.find('ATOM')>-1:
                 break
         key = lines[i][60:66]
         if len(strip(key)):
@@ -783,7 +785,7 @@ class DockingLogObject:
                 print('failed check for extra spaces')
                 nl = lines[:i]
                 for l in lines[i:]:
-                    if find(l,'ATOM')>-1:
+                    if l.find('ATOM')>-1:
                         #this stinks!!!
                         nl.append(l[:54]+l[57:60] + l[61:])
                     else:
@@ -853,7 +855,7 @@ from glob import glob
 import os
 from sys import argv
 from mglutil.math.rmsd import RMSDCalculator
-from bhtree import bhtreelib
+#from bhtree import bhtreelib
 from datetime import date
 import time
 
@@ -1036,7 +1038,7 @@ class FoxResultProcessor:
     def path_to_list(self, path):
         return glob(os.path.join(path, "*.dlg"))
 
-
+    '''
     def get_hb_interactions(self, ligand, receptor):
         """
         input   : pdb lines (ligand, receptor)
@@ -1105,7 +1107,9 @@ class FoxResultProcessor:
                         hb_lig_don.append([a[1],r])
         return { 'acceptors' : hb_lig_acc, 'donors': hb_lig_don}
 
+    '''
 
+    '''
     def get_contact_atoms(self, ligand_pose, receptor):
         """
             Input   : ligand pose, receptor
@@ -1141,7 +1145,7 @@ class FoxResultProcessor:
                         contact_atoms.append(rec_atom)
                     # TODO potentially interesting to put HB check here # to speed up...?
         return contact_atoms 
-
+    '''
 
     def lig_eff(self, energy, heavy_atoms):
         """ return ligand efficiency calculated on energy/heavyatoms """
@@ -1292,7 +1296,7 @@ CODE TO REPLACE THESE LINES USED FOR TESTING AND DEVELOPMENT:
         fptr.close()
         if self.verbose: print("closed ", pdbqt_filename)
 
-
+    '''
     def createPDBQTplus(self, results, total_runs, histogram, receptor_filename, lig_mol_name , dlg_list, max_dlg_count = None, clusters=[] ):
         """
             input   :   results list in the form [ 
@@ -1387,7 +1391,7 @@ CODE TO REPLACE THESE LINES USED FOR TESTING AND DEVELOPMENT:
                     obuff += i
             obuff +="ENDMDL   %d\n" % ( p+1 )
         return obuff
-
+    '''
 
 
 class DockingResultProcessor:
