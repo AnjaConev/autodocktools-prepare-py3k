@@ -534,26 +534,15 @@ class PdbWriter(MoleculeWriter):
         # Creating the atom name field
         # If the atom name is 4 characters long
         #if len(atmName)==4:
-        if len(atmName)>=4:
-            if len(atmName)>4:
-                atmName = atmName[:4]
-            # do something if it is an H
-            if atm.element == 'H':
-                atmName = atmName[-1]+atmName[:-1]
-                rec = rec + "%-4.4s"%atmName
-            #else:
-            #    rec = rec + "%4.4s"%atmName
-            elif len(atm.element)==2:
-                rec = rec + "%-4.4s"%atmName
-            else:
-                rec = rec + ' %-3s'%atmName[:-1]
-        elif len(atm.element)==2: # the Ca i.e else of if(atm.name)==4
-            rec = rec + '%-4.4s'%atm.element
+        if len(atmName)>4:
+            atmName = atmName[:4]
+        if len(atmName) == 4:
+            rec = rec + ' %-4.4s'%atmName
         else:
             rec = rec + ' %-3s'%atmName
 
         # [16] Alternate location indicator
-        rec = rec + altLoc
+        rec = rec + altLoc[0]
 
         # get the res name, res sequence number and the chain id.
         resName = ''

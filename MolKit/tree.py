@@ -761,7 +761,9 @@ By default, no message is returned.
         else:
             levelBelow = self[0].isAbove(what)
             if levelBelow>1:
-                exec("result=self"+".children"*levelBelow)
+                result=self.children
+                for i in range(levelBelow-1):
+                    result=result.children
                 if uniq:
                     result = result.uniq()
                 if len(self)==1:
@@ -778,7 +780,9 @@ By default, no message is returned.
             else:
                 levelAbove = self[0].isBelow(what)
                 if levelAbove>1:
-                    exec("result=self"+".parent"*levelAbove)
+                    result=self.parent
+                    for i in range(levelAbove-1):
+                        result=result.parent
                     if uniq:
                         result = result.uniq()
                     if len(self)==1:

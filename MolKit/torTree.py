@@ -11,7 +11,7 @@ from mglutil.math.transformation import Transformation
 import _py2k_string as string
 from itertools import zip_longest
 from .molecule import AtomSet, BondSet
-
+import functools
 global debug
 debug = 0
 
@@ -83,8 +83,10 @@ class TorTree:
                 at2 = b.atom1
                 if at2==at:
                     at2 = b.atom2
-                if at2._used: continue
-                if not b.activeTors:
+                
+                #print(at2._used)
+                if hasattr(at2, "_used") and at2._used: continue
+                if not hasattr(at2, "_used") and not b.activeTors:
                     if not hasattr(at2, 'tt_ind'):
                         #and at2!=startAt and at2!=fromAt:
                         self.atomIndex = self.atomIndex + 1
@@ -152,7 +154,6 @@ class TorTree:
                 # now there's a problem
                 raise RuntimeError("indistinguishable torsion TreeNodes")
                 return 0
-        import functools 
         cmp = functools.cmp_to_key(__sortTorsionMap)
         allNodes.sort(key=cmp)
         #don't put rootNode into TorsionMap!!!
@@ -260,7 +261,8 @@ class TorTree:
                 # now there's a problem
                 raise RuntimeError("indistinguishable torsion TreeNodes")
                 return 0
-        torsionMap.sort(__sortTorsionMap)
+        cmp = functools.cmp_to_key(__sortTorsionMap)
+        torsionMap.sort(key=cmp)
         return torsionMap
 
 

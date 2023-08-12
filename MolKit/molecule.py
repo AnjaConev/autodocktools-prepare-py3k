@@ -1077,7 +1077,10 @@ class MoleculeSet(TreeNodeSet):
         else:
             levelBelow = self[0].isAbove(what)
             if levelBelow>1:
-                exec("result=self"+".children"*levelBelow)
+                #exec("result=self"+".children"*levelBelow)
+                result=self.children
+                for i in range(levelBelow-1):
+                    result=result.children
                 result = result.copy()
                 if uniq:
                     result = result.uniq()
@@ -1091,7 +1094,9 @@ class MoleculeSet(TreeNodeSet):
             else:
                 levelAbove = self[0].isBelow(what)
                 if levelAbove>1:
-                    exec("result=self"+".parent"*levelAbove)
+                    result=self.parent
+                    for i in range(levelAbove-1):
+                        result=result.parent
                     if uniq:
                         result = result.uniq()
                     return result
