@@ -14,9 +14,9 @@
 
 import _py2k_string as string
 import os
+from typing import List
 
-
-def Read(filename, modelsAs='molecules'):
+def Read(filename, modelsAs='molecules') -> List:
     if not os.path.exists(filename):
          raise AssertionError("%s does't exist" %filename)
     from MolKit.pdbParser import PdbParser, PdbqParser,PdbqsParser,\
