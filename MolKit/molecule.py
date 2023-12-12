@@ -1163,6 +1163,7 @@ class Molecule(TreeNode):
         self.parser = None  # parser object to read files
         self.hasBonds = 0 # 1 for bondsByDistance is supported
         # dictionary used to parse CONECT records in pdbParsers.
+        self.allAtoms: AtomSet
         if parent==None:
             self.atmNum = {}
             self.allAtoms = AtomSet([])

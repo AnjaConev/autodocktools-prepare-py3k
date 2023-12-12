@@ -48,6 +48,7 @@ Atom parsing conventions:
 from os.path import splitext, basename
 from _py2k_string import split, strip, digits, lower, find
 from MolKit.moleculeParser import MoleculeParser
+from typing import List
 from MolKit.protein import Protein, Chain, ChainSet, Residue, ResidueSet, ProteinSet
 from MolKit.molecule import Atom, AtomSet, Bond, BondSet, HydrogenBond
 from warnings import warn
@@ -632,7 +633,7 @@ You have to provide one as the second argument' % key);
         list(map( Atom.addConformation, self.mol.chains[0].residues.atoms, coords ))
 
 
-    def parse(self, objClass=Protein):
+    def parse(self, objClass=Protein) -> List[Protein]:
         """Reads a PDB that is PDB specs compliants"""
 
         if self.allLines is None and self.filename:

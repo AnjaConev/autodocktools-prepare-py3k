@@ -36,8 +36,19 @@ class TorTree:
         elif parser is not None:
             self.rootNode = self.__makeTree(parser.allLines)
             self.torsionMap = self.__makeTorsionMap()
+        self.__checkRepairTree__(self.rootNode)
 
 
+    def __checkRepairTree__(self, node, parent=None):
+        # Check that the torsion tree has been properly built, and correct it if necessary.
+        # Make sure that the atoms of the each bond in the torsion tree are in the list of parent atoms 
+        # This is needed because of a bug in the TorTree class.
+        if parent and node.bond[1] not in parent.atomList:
+            parent.atomList.append(node.bond[1])
+        for child in node.children:
+            self.__checkRepairTree__(child, node)
+        
+    
     def __buildTree(self, rootAtom):
         self.tor_number = 0
         bond = rootAtom.bonds[0]

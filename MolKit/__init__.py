@@ -19,11 +19,17 @@ from typing import List
 def Read(filename, modelsAs='molecules') -> List:
     if not os.path.exists(filename):
          raise AssertionError("%s does't exist" %filename)
+    
+    # these read in a tree list set of Protein objects
     from MolKit.pdbParser import PdbParser, PdbqParser,PdbqsParser,\
             PdbqtParser, PQRParser, F2DParser
 
+    # this reads in a tree list set of Molecule objects
     from MolKit.mol2Parser import Mol2Parser
+    
+    # this reads in a tree list set of Protein objects
     from MolKit.mmcifParser import MMCIFParser
+
     ext = filename.split('.')
     if ext[-1]=='pdb':
         parser = PdbParser(filename, modelsAs=modelsAs)
