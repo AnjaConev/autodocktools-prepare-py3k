@@ -6,6 +6,7 @@
 #
 #
 import os, _py2k_string as string
+import io
 import numpy, math
 
 from MolKit import Read
@@ -750,12 +751,12 @@ class LigandPreparation(AutoDockMoleculePreparation):
                     inactivate_all_torsions=False,
                     version=3, limit_torsions=False,
                     delete_single_nonstd_residues=False,
-                    detect_bonds_between_cycles=False):
+                    detect_bonds_between_cycles=False, inmem=False):
         # why aren't repairs, cleanup and allowed_bonds lists??
         # to run tests: use allowed_bonds = 'guanidinium'
         if debug: print("LPO: allowed_bonds=", allowed_bonds)
         self.detect_bonds_between_cycles = detect_bonds_between_cycles
-
+        self.inmem = inmem
 
         AutoDockMoleculePreparation.__init__(self, molecule, mode, repairs,
                                             charges_to_add, cleanup,
@@ -880,7 +881,7 @@ class LigandPreparation(AutoDockMoleculePreparation):
                 #at.element = newval
                 #at.autodock_element = at.element
                 #if self.debug: print "to ", at.name
-        self.writer.write(mol, outputfilename)
+        self.writer.write(mol, outputfilename, self.inmem)
         self.outputfilename = outputfilename
         #print 'back from writing'
         if self.dict is not None:
@@ -994,7 +995,7 @@ class AD4LigandPreparation(LigandPreparation):
                     attach_nonbonded_fragments=False,
                     detect_bonds_between_cycles=False,
                     attach_singletons=False,
-                    write_CONECT=False):
+                    write_CONECT=False, inmem=False):
 
 
         if attach_nonbonded_fragments==True:
@@ -1010,8 +1011,10 @@ class AD4LigandPreparation(LigandPreparation):
                     inactivate_all_torsions=inactivate_all_torsions,
                     version=version,
                     limit_torsions=limit_torsions,
-                    detect_bonds_between_cycles=detect_bonds_between_cycles)
-
+                    detect_bonds_between_cycles=detect_bonds_between_cycles,
+                    inmem = inmem)
+        
+        self.inmem = inmem
         # AD4 force field uses total rotatable bonds for TORSDOF:
         # calculation of loss of entropy on ligand binding
         #molecule.TORSDOF = molecule.possible_tors
@@ -1030,6 +1033,7 @@ class AD4LigandPreparation(LigandPreparation):
             self.RBM.limit_torsions(ndihe, type)
 
         self.writer = AD4LigandWriter(write_CONECT=write_CONECT)
+        self.inmem = inmem
         #MODE SWITCH 5: write outputfile     ||IN USE||
         if mode=='automatic':
             #write outputfile now without waiting ...
@@ -1059,7 +1063,7 @@ class LigandWriter:
         self.write_CONECT = write_CONECT
 
 
-    def write(self, ligand, outputfile):
+    def write(self, ligand, outputfile, inmem = False):
         #setup rnum field
         ligand.allAtoms.rnum = -1
 
@@ -1072,7 +1076,10 @@ class LigandWriter:
 
         assert hasattr(ligand, 'ROOT') # is this necessary or redundant
         assert hasattr(ligand, 'TORSDOF')
-        self.outfptr = open(outputfile, 'w')
+        if not inmem:
+            self.outfptr = open(outputfile, 'w')
+        else:
+            self.outfptr = io.StringIO()
         #FIRST write out remarks about torsions
         if (ttc>self.maxtors):
             self.outfptr.write("REMARK WARNING: %d MAX_TORS EXCEEDED!!!\n"%(self.maxtors))
@@ -1180,6 +1187,8 @@ class LigandWriter:
         #call write_CONECT here
         if self.write_CONECT:
             self.writeCONECTRecords(ligand, self.outfptr)
+        if inmem:
+            ligand.pdbqt_str = self.outfptr.getvalue()
         self.outfptr.close()
         ligand.returnCode = 0
 
