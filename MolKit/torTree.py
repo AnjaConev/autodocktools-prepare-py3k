@@ -10,7 +10,7 @@ from mglutil.util.tree import TreeNode
 from mglutil.math.transformation import Transformation
 import _py2k_string as string
 from itertools import zip_longest
-from .molecule import AtomSet, BondSet
+from .molecule import AtomSet, BondSet, Bond
 import functools
 global debug
 debug = 0
@@ -30,10 +30,13 @@ class TorTree:
     """
     def __init__(self, parser=None, rootAtom=None):
 
+        if debug: print("TEST-0")
         if rootAtom is not None:
+            if debug: print("TEST-0-1")
             self.rootNode, allNodes = self.__buildTree(rootAtom)
             self.torsionMap = self.__orderTorsionMap(allNodes)
         elif parser is not None:
+            if debug: print("TEST-1")
             self.rootNode = self.__makeTree(parser.allLines)
             self.torsionMap = self.__makeTorsionMap()
         self.__checkRepairTree__(self.rootNode)
@@ -50,6 +53,7 @@ class TorTree:
         
     
     def __buildTree(self, rootAtom):
+        if debug: print("TEST-buildtree-root")
         self.tor_number = 0
         bond = rootAtom.bonds[0]
         at2 = bond.atom1
@@ -66,6 +70,7 @@ class TorTree:
         # this is called with an activeTors bnd;
         # always making a newNode
         # first add the fromAtom
+        if debug: print("TEST-buildtree-node-{}".format(self.tor_number))
         newNode = TreeNode()
         newNode.number = self.tor_number
         allNodes.append(newNode)
@@ -85,8 +90,10 @@ class TorTree:
             #ats = []
         #first expand the adjAts to include all atoms linked
         #to startAt by inactive bonds
+        if debug: print("TEST-adj-ats")
+        if debug: print(len(adjAts))
         for at in adjAts:
-            if at._used: continue
+            if hasattr(at, "_used") and at._used == 1: continue
             at._used = 1
             for b in at.bonds:
                 # recursively add all rootatoms
@@ -96,8 +103,8 @@ class TorTree:
                     at2 = b.atom2
                 
                 #print(at2._used)
-                if hasattr(at2, "_used") and at2._used: continue
-                if not hasattr(at2, "_used") and not b.activeTors:
+                if hasattr(at2, "_used") and at2._used == 1: continue
+                if not b.activeTors:
                     if not hasattr(at2, 'tt_ind'):
                         #and at2!=startAt and at2!=fromAt:
                         self.atomIndex = self.atomIndex + 1
@@ -108,8 +115,18 @@ class TorTree:
                             atomList.append(at2.tt_ind)
                             #ats.append(at2)
         #have to redo this after loop to get breadth first:
+        if debug: print("TEST-adj-ats expanded")
+        if debug: print(len(adjAts))
         for at in adjAts:
             for b in at.bonds:
+                if debug: print("TEST-bond")
+                #print(b.__dict__)
+                if debug: print(b.name)
+                if debug: print(b.activeTors)
+                #print(type(b))
+                if type(b) != BondSet and type(b) != Bond:
+                    if debug: print("TEST-continuing?")
+                    continue
                 at2 = b.atom1
                 if at2==at:
                     at2 = b.atom2
@@ -118,7 +135,9 @@ class TorTree:
                     #and at2!=startAt and at2!=fromAt:
                     self.atomIndex = self.atomIndex + 1
                     at2.tt_ind = self.atomIndex
-                if b.activeTors:
+                if b.activeTors == True:
+                    if debug: print("TEST-bond-active")
+                    if debug: print(b.__dict__)
                     nnode, allNodes = self.__buildNode(b, at, at2, 0, allNodes)
                     newNode.children.append(nnode)
                     #keep track of number of atoms in subtree
@@ -144,6 +163,8 @@ class TorTree:
         newNode.atoms_to_move = newNode.atoms_to_move + len(atList)
         newNode.atomList = atList
         #newNode.ats = ats
+        #print(self.tor_number)
+        #print(atList)
         return newNode, allNodes
 
 
@@ -172,6 +193,7 @@ class TorTree:
 
 
     def __makeTree(self, lineList, flexRes=False):
+        if debug: print("TEST-2")
         # initialize
         nodeStack = []
         atomToParentNode = 0 # first atom after BRANCH goes to parent
@@ -200,8 +222,13 @@ class TorTree:
                     if debug: print("add atom: ", atomIndex, nodeStack[-1])
                 atomIndex = atomIndex + 1
             elif (wordList[0] == 'TORS' or wordList[0] == 'BRANCH'):
+                if debug: print("TEST-branch")
+                if debug: print("parent atoms")
+                if debug: print(nodeStack[-1].atomList)
                 atomToParentNode = 1 # set; unset in HETATM (above)
                 newNode = TreeNode(parent=nodeStack[-1])
+                if debug: print("parent's child")
+                if debug: print(nodeStack[-1].children)
                 newNode.number = tor_number
                 newNode.bond = (int(wordList[1])-1, int(wordList[2])-1)
                 newNode.atomList = []
@@ -211,6 +238,7 @@ class TorTree:
             elif (wordList[0] == 'ENDTORS' or wordList[0] == 'ENDBRANCH'):
                 nodeStack.pop()
             elif wordList[0] == 'ROOT':
+                if debug: print("TEST-root")
                 rootNode = TreeNode()
                 rootNode.number = 0
                 rootNode.bond = (None, None)
