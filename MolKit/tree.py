@@ -346,12 +346,12 @@ sets
             if someString.find(']')==-1:
                 someString = string.replace(someString, '-', ':')
             #convert * to .* except for \*
-            if someString.find('\*')>-1:
+            if someString.find('\\*')>-1:
                 #mask \* before replacing * with .*
-                someString.replace('\*', '\\')
+                someString.replace('\\*', '\\')
                 someString.replace('*', '.*')
                 #unmask \\ after replacing * with .*
-                someString.replace('\\', '\*')
+                someString.replace('\\', '\\*')
             else:
                 someString = string.replace(someString, '*', '.*')
         return someString
@@ -611,7 +611,7 @@ By default, no message is returned.
                         caseSensitive=caseSensitive,
                         escapeCharacters=escapeCharacters)
             result = self.ReturnType(result)
-            selectionStringRepr = '(%s\s\%s)'%(self.stringRepr, selectionString)
+            selectionStringRepr = '(%s\\s\\%s)'%(self.stringRepr, selectionString)
             result.setStringRepr(selectionStringRepr)
             if returnMsg:
                 result = (result, msg)
