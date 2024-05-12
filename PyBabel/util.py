@@ -49,7 +49,8 @@ def bond_angle(a, b, c):
     cos_theta = ( (a[0] - b[0]) * (c[0] - b[0]) +
                   (a[1] - b[1]) * (c[1] - b[1]) +
                   (a[2] - b[2]) * (c[2] - b[2]) ) / dist
-    if cos_theta  + 1.0 < 0.0001: angle = 180.0
+    
+    if abs(cos_theta)  - 1.0 < 0.0001: angle = 180.0
     else: angle = (math.acos(cos_theta)) * RAD_TO_DEG
     return angle
 
