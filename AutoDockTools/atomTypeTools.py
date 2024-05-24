@@ -349,7 +349,7 @@ class AutoDock4_AtomTyper:
  
      
     def setAutoDockElements(self, mol, typeAtoms=0, reassign=False, splitAcceptors=False):
-        if os.path.splitext(mol.parser.filename)[-1]=='.pdbqt' and reassign is False:
+        if mol.parser and os.path.splitext(mol.parser.filename)[-1]=='.pdbqt' and reassign is False:
             if self.verbose:
                 print('setAutoDockElements unnecessary:\n', mol.name, ' already has AD4 atomtypes: not reassigned!')
             return
