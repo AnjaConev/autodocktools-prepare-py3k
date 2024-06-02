@@ -546,7 +546,7 @@ class AD4ReceptorPreparation(AutoDockMoleculePreparation):
                     outputfilename=None, debug=False,
                     version=4, preserved={},
                     delete_single_nonstd_residues=False,
-                    dict=None):
+                    dict=None, inmem=False):
 
 
         self.dict = dict
@@ -574,11 +574,11 @@ class AD4ReceptorPreparation(AutoDockMoleculePreparation):
         if mode=='automatic':
             #write outputfile now without waiting ...
             #fix this: what records should be written?
-            self.write(outputfilename)
+            self.write(outputfilename, inmem=inmem)
             self.outputfilename = outputfilename
 
 
-    def write(self, outputfilename=None):
+    def write(self, outputfilename=None, inmem=False):
         #write to outputfile
         mol = self.molecule
         if not outputfilename and not self.outputfilename:
@@ -586,7 +586,7 @@ class AD4ReceptorPreparation(AutoDockMoleculePreparation):
             if self.debug: print('using std outputfilename ', outputfilename)
         #should this be done at Molecule level or at Atom level?
         #Atom level would allow multiple molecules in Receptor, at no price
-        self.writer.write(mol, outputfilename)
+        self.writer.write(mol, outputfilename, inmem=inmem)
         if self.debug: print("wrote ", mol.name, " to ", outputfilename)
         if self.dict is not None:
             if not os.path.exists(self.dict):
@@ -655,7 +655,7 @@ class ReceptorWriter:
         self.write_CONECT = write_CONECT
 
 
-    def write(self, receptor, outputfile):
+    def write(self, receptor, outputfile, inmem = False):
         #should this be done at Molecule level or at Atom level?
         receptor_atoms = receptor.chains.residues.atoms
         len_receptor_atoms = len(receptor_atoms)
@@ -663,8 +663,10 @@ class ReceptorWriter:
         ##check each condition for receptor_atoms
         for cond in self.conditions:
             assert len(list(filter(cond, receptor_atoms)))==len_receptor_atoms
-
-        outptr = open(outputfile, 'w')
+        if not inmem:
+            outptr = open(outputfile, 'w')
+        else:
+            outptr = io.StringIO()
         records = ['ATOM']
         #if self.write_CONECT:
         #    records.append('CONECT')
@@ -679,6 +681,8 @@ class ReceptorWriter:
         #optional CONECT records???
         if self.write_CONECT:
             self.writeCONECTRecords(receptor, outptr)
+        if inmem:
+            receptor.pdbqt_str = outptr.getvalue()
         outptr.close()
 
 
@@ -702,7 +706,7 @@ class AD4ReceptorWriter(ReceptorWriter):
     AD4ReceptorWriter class writes a receptor molecule which has a ReceptorPreparationObject to a pdbqt file
 """
 
-    def __init__(self, write_CONECT=False):
+    def __init__(self, write_CONECT=False, inmem=False):
         self.writer = PdbqtWriter()
         self.conditions = [lambda x: hasattr(x, 'autodock_element'), \
                            lambda x: x.chargeSet is not None]
